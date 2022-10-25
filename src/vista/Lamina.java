@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 import modelo.BaseDatos;
 
@@ -14,31 +16,29 @@ public class Lamina extends JPanel{
 	
 	private String [] campos;
 	
+	private String nombreBaseDatos;
+	
 	private BaseDatos baseDatos;
 	
 	private Object [][] objetos;
 	
 	private JTable jTable;
 	
+	private JPanel jPanelCenter;
+	
+	private JScrollPane jScrollTabla;
+	
+	private JTextField jTextField2;
+	
 	private JComboBox jComboBox;
 	
 	private ArrayList <String> tablas;
 	
-	public Lamina() {
+	public Lamina() {	
 		
-		conexion();
 		
-		try {
-			
-			 campos = baseDatos.nombreColumnas();
-						
-			 objetos = baseDatos.arrayConsulta();				 
-			
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+		this.baseDatos = new BaseDatos();
+	
 		setLayout(new BorderLayout());
 		
 		JPanel jPanelTop = new JPanel();
@@ -61,6 +61,8 @@ public class Lamina extends JPanel{
 					
 					tablas = baseDatos.obtenerTablas(textoBusqueda);
 					
+					nombreBaseDatos = textoBusqueda;
+					
 					rellenaComboBox(tablas);
 										
 				} catch (Exception e1) {
@@ -79,9 +81,11 @@ public class Lamina extends JPanel{
 		
 		add(jPanelTop, BorderLayout.NORTH);
 		
-		JPanel jPanelCenter = new JPanel();
+		jPanelCenter = new JPanel();
 		
-		JTextField jTextField2 = new JTextField("Campos");
+		jTextField2 = new JTextField("Campos");
+		
+		jTextField2.setFont(new Font(jTextField2.getFont().getName(),Font.BOLD,jTextField2.getFont().getSize()));
 		
 		jTextField2.setHorizontalAlignment(jTextField2.CENTER);
 		
@@ -99,7 +103,9 @@ public class Lamina extends JPanel{
 		
 		jPanelComboBox.add(jComboBox);
 		
-		jTable = new JTable(objetos, campos);		
+		jTable = new JTable();
+		
+		jScrollTabla = new JScrollPane();
 		
 		jTextField3.setFocusable(false);
 						
@@ -111,7 +117,7 @@ public class Lamina extends JPanel{
 		
 		jPanelCenter.add(jPanelComboBox, BorderLayout.WEST);
 		
-		jPanelCenter.add(new JScrollPane(jTable), BorderLayout.CENTER);
+		jPanelCenter.add(jScrollTabla, BorderLayout.CENTER);
 
 		add(jPanelCenter, BorderLayout.CENTER);
 		
@@ -125,7 +131,16 @@ public class Lamina extends JPanel{
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
 				
-				
+				try {
+					
+					crearVista(jComboBox.getSelectedItem().toString(), nombreBaseDatos);
+					
+					jTextField2.setText(jComboBox.getSelectedItem().toString());
+					
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				
 			}
 		});
@@ -138,11 +153,11 @@ public class Lamina extends JPanel{
 		
 	}
 	
-	public void conexion() {
+	public void conexion(String nombreDB) {
 		
 		this.baseDatos = new BaseDatos();
 		
-		baseDatos.conecta();
+		baseDatos.conecta(nombreDB);
 		
 	}
 	
@@ -158,11 +173,18 @@ public class Lamina extends JPanel{
 		
 	}
 	
-	public void crearVista() {
+	public void crearVista(String tabla, String nombreDB) throws SQLException {
+				
+		campos = baseDatos.nombreColumnas(tabla, nombreDB);
 		
+		objetos = baseDatos.arrayConsulta(tabla, nombreDB);		
+
+		TableModel tableModel = new DefaultTableModel(objetos, campos);
 		
+		jTable.setModel(tableModel);
 		
+		jScrollTabla.getViewport().add(jTable);				
 		
-	}
+	}	
 
 }

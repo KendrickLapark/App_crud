@@ -8,7 +8,9 @@ public class BaseDatos {
 	
 	private Connection connection;
 	
-	public void conecta() {
+	private Statement statement;
+	
+	public void conecta(String bDCadena) {
 		
 		try {			
 			
@@ -16,17 +18,9 @@ public class BaseDatos {
 				
 			String[] ruta = getRoot(bufferedReader);
 			
-			connection = DriverManager.getConnection(ruta[0], ruta[1], ruta[2]);
+			connection = DriverManager.getConnection(ruta[0]+bDCadena, ruta[1], ruta[2]);
 			
-			consultaFilas();
-			
-			String [] nombreColumnas = nombreColumnas();
-			
-			for (String string : nombreColumnas) {
-				System.out.print(string+" // ");
-			}
-			
-			arrayConsulta();
+			statement = connection.createStatement();
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -34,6 +28,10 @@ public class BaseDatos {
 		}
 		
 	}
+	
+	/*
+	 * Obtiene la url de la base de datos de un archivo ".txt"
+	 */
 	
 	public String [] getRoot(BufferedReader bufferedReader) {
 		
@@ -61,57 +59,14 @@ public class BaseDatos {
 	}
 	
 	/*
-	 * Este método obtiene el número de filas y de columnas de una tabla y el
-	 * nombre de las columnas;
+	 * Devuelve el número de filas que tiene la tabla a consultar
 	 */
 	
-	public void consultaFilas() throws SQLException {	
-					
-			Statement statement = connection.createStatement();
-			
-			String filas = "SELECT COUNT(*) FROM USUARIOS;";
-			
-			String todo = "SELECT * FROM USUARIOS;";
-			
-			ResultSet resultSet = statement.executeQuery(filas);
-
-			if(resultSet.next()) {
-				int numeroFilas = resultSet.getInt(1);	
-				
-				System.out.println("El número de filas es: "+numeroFilas);
-				
-			}	
-
-			ResultSet resultSet2 = statement.executeQuery(todo);
-			
-			ResultSetMetaData resultSetMetaData = resultSet2.getMetaData();
-			
-			int numeroColumnas = resultSetMetaData.getColumnCount();
-			
-			System.out.println("El número de columnas es: "+numeroColumnas);
-			
-			ResultSet resultSet3 = statement.executeQuery(todo);
-			
-			ResultSetMetaData resultSetMetaData2 = resultSet3.getMetaData();		
-			
-			String nombreColumnas = "";
-			
-			for (int i = 1; i < numeroColumnas; i++) {
-				nombreColumnas=resultSetMetaData2.getColumnLabel(i);
-				
-				//System.out.println(nombreColumnas);
-			}	
-			
-		
-	}
-	
-	public int cuentaFilas() throws SQLException {
+	public int cuentaFilas(String tabla) throws SQLException {
 				
 		int numeroFilas = 0;
 		
-		Statement statement = connection.createStatement();
-		
-		String filas = "SELECT COUNT(*) FROM USUARIOS;";
+		String filas = "SELECT COUNT(*) FROM "+tabla+";";
 		
 		ResultSet resultSet = statement.executeQuery(filas);
 
@@ -124,15 +79,17 @@ public class BaseDatos {
 		
 	}
 	
-	public int cuentaColumnas() throws SQLException {
+	/*
+	 * Devuelve el número de campos que tiene la tabla a consultar
+	 */
+	
+	public int cuentaColumnas(String tabla) throws SQLException {
 		
-		int numeroColumnas = 0;
+		int numeroColumnas = 0;		
 		
-		String todo = "SELECT * FROM USUARIOS;";
+		String consulta = "SELECT * FROM "+tabla+";";
 		
-		Statement statement = connection.createStatement();
-		
-		ResultSet resultSet2 = statement.executeQuery(todo);
+		ResultSet resultSet2 = statement.executeQuery(consulta);
 		
 		ResultSetMetaData resultSetMetaData = resultSet2.getMetaData();
 		
@@ -146,19 +103,19 @@ public class BaseDatos {
 	 * Devuelve el nombre de las columnas de la tabla;
 	 */
 	
-	public String[] nombreColumnas() throws SQLException {
+	public String[] nombreColumnas(String tabla, String nombreBD) throws SQLException {
 		
-		Statement statement = connection.createStatement();
+		conecta(nombreBD);	
 		
-		String todo = "SELECT * FROM USUARIOS;";
+		String consulta = "SELECT * FROM "+tabla+";";
 		
-		ResultSet resultSet = statement.executeQuery(todo);
+		ResultSet resultSet = statement.executeQuery(consulta);
 		
 		ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
 		
 		String [] nombreColumnas = new String[resultSetMetaData.getColumnCount()];
 		
-		ResultSet resultSet3 = statement.executeQuery(todo);
+		ResultSet resultSet3 = statement.executeQuery(consulta);
 		
 		ResultSetMetaData resultSetMetaData2 = resultSet3.getMetaData();
 		
@@ -174,23 +131,21 @@ public class BaseDatos {
 	 * Devuelve una matriz de objetos para crear la table ; return Object[][]
 	 */
 	
-	public Object[][] arrayConsulta() throws SQLException {
-		
+	public Object[][] arrayConsulta(String tabla, String nombreDB) throws SQLException {
+				
 		System.out.println(" ");
 		
-		int nFilas = cuentaFilas();
+		int nFilas = cuentaFilas(tabla);
 		
-		int nColumnas = cuentaColumnas();
+		int nColumnas = cuentaColumnas(tabla);
 	
 		Object [][] objetos = new Object[nFilas][nColumnas];
 		
-		Statement statement = connection.createStatement();
-		
-		String todo = "SELECT * FROM USUARIOS;";
+		String todo = "SELECT * FROM "+tabla+";";
 		
 		ResultSet resultSet = statement.executeQuery(todo);
 		
-		String [] nombreColumnas = nombreColumnas();
+		String [] nombreColumnas = nombreColumnas(tabla, nombreDB);
 		
 		int contador = 0;			
 		
@@ -229,10 +184,12 @@ public class BaseDatos {
 	 */
 	
 	public ArrayList <String> obtenerTablas(String nombreBD) throws SQLException {
-		
+			
 		ArrayList <String> nombreTablas = new ArrayList<>();
 		
-		Statement statement = connection.createStatement();
+		conecta(nombreBD);	
+		
+		baseDatos_disponibles();
 		
 		String moldeConsulta = "show tables from ";
 		
@@ -255,6 +212,24 @@ public class BaseDatos {
 		}
 		
 		return nombreTablas;
+		
+	}
+	
+	public ArrayList<String> baseDatos_disponibles() throws SQLException {
+		
+		ResultSet resultSet = connection.getMetaData().getCatalogs();
+		
+		ArrayList <String> bases_disponibles = new ArrayList<>();
+		
+		while(resultSet.next()) {
+			
+			bases_disponibles.add(resultSet.getString("TABLE_CAT"));
+			
+			//System.out.println("TABLE_CAT "+resultSet.getString("TABLE_CAT"));
+			
+		}
+		
+		return bases_disponibles;
 		
 	}
 
