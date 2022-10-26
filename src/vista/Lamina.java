@@ -30,7 +30,7 @@ public class Lamina extends JPanel{
 	
 	private JTextField jTextField2;
 	
-	private JComboBox jComboBox;
+	private JComboBox jComboBox, jComboBox2;
 	
 	private ArrayList <String> tablas;
 	
@@ -43,9 +43,9 @@ public class Lamina extends JPanel{
 		
 		JPanel jPanelTop = new JPanel();
 		
-		JTextField jTextField = new JTextField("Introduce base de datos", 10);	
+		JLabel jLabel = new JLabel("Base de datos: ");
 		
-		jTextField.setSize(120, 20);
+		jComboBox = new JComboBox();		
 		
 		JButton jButton = new JButton("Aceptar");
 		
@@ -55,7 +55,7 @@ public class Lamina extends JPanel{
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
 				
-				String textoBusqueda = jTextField.getText();
+				String textoBusqueda = jComboBox.getSelectedItem().toString();
 				
 				try {				
 					
@@ -75,10 +75,12 @@ public class Lamina extends JPanel{
 		
 		jPanelTop.setLayout(new FlowLayout(FlowLayout.LEFT));
 		
-		jPanelTop.add(jTextField);
+		jPanelTop.add(jLabel);
+		
+		jPanelTop.add(jComboBox);
 		
 		jPanelTop.add(jButton);
-		
+					
 		add(jPanelTop, BorderLayout.NORTH);
 		
 		jPanelCenter = new JPanel();
@@ -93,15 +95,15 @@ public class Lamina extends JPanel{
 		
 		JTextField jTextField3 = new JTextField("Registrar");
 		
-		jComboBox = new JComboBox();
+		jComboBox2 = new JComboBox();
 		
-		jComboBox.addItem("Tablas");		
+		jComboBox2.addItem("Tablas");		
 		
-		jComboBox.setAlignmentY(TOP_ALIGNMENT);
+		jComboBox2.setAlignmentY(TOP_ALIGNMENT);
 		
 		JPanel jPanelComboBox = new JPanel();
 		
-		jPanelComboBox.add(jComboBox);
+		jPanelComboBox.add(jComboBox2);
 		
 		jTable = new JTable();
 		
@@ -133,9 +135,9 @@ public class Lamina extends JPanel{
 				
 				try {
 					
-					crearVista(jComboBox.getSelectedItem().toString(), nombreBaseDatos);
+					crearVista(jComboBox2.getSelectedItem().toString(), nombreBaseDatos);
 					
-					jTextField2.setText(jComboBox.getSelectedItem().toString());
+					jTextField2.setText(jComboBox2.getSelectedItem().toString());
 					
 				} catch (SQLException e1) {
 					// TODO Auto-generated catch block
@@ -147,7 +149,7 @@ public class Lamina extends JPanel{
 		
 		jPanelBot.add(jButton2);
 		
-		add(jPanelBot, BorderLayout.SOUTH);	
+		add(jPanelBot, BorderLayout.SOUTH);			
 	
 		setVisible(true);				
 		
@@ -163,11 +165,11 @@ public class Lamina extends JPanel{
 	
 	public void rellenaComboBox(ArrayList<String> tablas) {
 		
-		jComboBox.removeAllItems();
+		jComboBox2.removeAllItems();
 
 		for (String tabla : tablas) {
 			
-			jComboBox.addItem(tabla);
+			jComboBox2.addItem(tabla);
 		
 		}
 		
@@ -185,6 +187,14 @@ public class Lamina extends JPanel{
 		
 		jScrollTabla.getViewport().add(jTable);				
 		
-	}	
+	}		
+	
+	public BaseDatos getBaseDatos() {
+		return baseDatos;
+	}
+	
+	public JComboBox getjComboBox() {
+		return jComboBox;
+	}
 
 }

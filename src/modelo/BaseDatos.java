@@ -217,15 +217,20 @@ public class BaseDatos {
 	
 	public ArrayList<String> baseDatos_disponibles() throws SQLException {
 		
+		conecta("");
+		
 		ResultSet resultSet = connection.getMetaData().getCatalogs();
 		
 		ArrayList <String> bases_disponibles = new ArrayList<>();
 		
 		while(resultSet.next()) {
 			
-			bases_disponibles.add(resultSet.getString("TABLE_CAT"));
-			
-			//System.out.println("TABLE_CAT "+resultSet.getString("TABLE_CAT"));
+			if(!resultSet.getString("TABLE_CAT").equals("mysql") &&
+					!resultSet.getString("TABLE_CAT").equals("performance_schema") &&
+					!resultSet.getString("TABLE_CAT").equals("information_schema") &&
+					!resultSet.getString("TABLE_CAT").equals("sys")){
+				bases_disponibles.add(resultSet.getString("TABLE_CAT"));
+			}			
 			
 		}
 		
