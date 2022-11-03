@@ -3,7 +3,7 @@ package vista;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import javax.swing.JFrame;
+import javax.swing.*;
 
 import controlador.CargaBD;
 import modelo.BaseDatos;
@@ -11,10 +11,18 @@ import modelo.BaseDatos;
 public class Marco extends JFrame{
 	
 	private ArrayList<String> bdDisponibles;
+	
+	private int x = 600;
+	
+	private int y = 200;
+	
+	private int width = 1080;
+	
+	private int height = 720;
 
 	public Marco() {
 		
-		setBounds(600, 200, 700, 700);
+		setBounds(x, y, width, height);
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
